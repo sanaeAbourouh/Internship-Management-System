@@ -2,36 +2,34 @@ import { useEffect, useState } from "react";
 
 const API = "http://127.0.0.1:5000/api";
 
-function CompaniesPage() {
-  const [companies, setCompanies] = useState([]);
+function SupervisorsPage() {
+  const [supervisors, setSupervisors] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
-  const [editingCompany, setEditingCompany] = useState(null);
+  const [editingSupervisor, setEditingSupervisor] = useState(null);
 
   const [formData, setFormData] = useState({
-    CompanyName: "",
+    Name: "",
     Email: "",
-    Address: "",
     Phone: "",
-    Industry: "",
   });
 
-  const loadCompanies = () => {
-    fetch(`${API}/companies`)
+  const loadSupervisors = () => {
+    fetch(`${API}/supervisors`)
       .then((response) => response.json())
       .then((data) => {
-        setCompanies(data);
+        setSupervisors(data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error loading companies:", error);
+        console.error("Error loading supervisors:", error);
         setLoading(false);
       });
   };
 
   useEffect(() => {
-    loadCompanies();
+    loadSupervisors();
   }, []);
 
   const handleChange = (event) => {
@@ -41,30 +39,38 @@ function CompaniesPage() {
     });
   };
 
-  const handleEdit = (company) => {
-    setEditingCompany(company);
+  const resetForm = () => {
+    setFormData({
+      Name: "",
+      Email: "",
+      Phone: "",
+    });
+
+    setEditingSupervisor(null);
+  };
+
+  const handleEdit = (supervisor) => {
+    setEditingSupervisor(supervisor);
 
     setFormData({
-      CompanyName: company.CompanyName,
-      Email: company.Email,
-      Address: company.Address || "",
-      Phone: company.Phone || "",
-      Industry: company.Industry || "",
+      Name: supervisor.Name,
+      Email: supervisor.Email,
+      Phone: supervisor.Phone || "",
     });
 
     setShowForm(true);
   };
 
-  const handleDelete = async (companyId) => {
+  const handleDelete = async (supervisorId) => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this company?"
+      "Are you sure you want to delete this supervisor?"
     );
 
     if (!confirmed) return;
 
     try {
       const response = await fetch(
-        `${API}/companies/${companyId}`,
+        `${API}/supervisors/${supervisorId}`,
         {
           method: "DELETE",
         }
@@ -73,13 +79,13 @@ function CompaniesPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Failed to delete company.");
+        alert(data.error || "Failed to delete supervisor.");
         return;
       }
 
-      loadCompanies();
+      loadSupervisors();
     } catch (error) {
-      console.error("Error deleting company:", error);
+      console.error("Error deleting supervisor:", error);
       alert("Could not connect to the server.");
     }
   };
@@ -88,11 +94,11 @@ function CompaniesPage() {
     event.preventDefault();
 
     try {
-      const url = editingCompany
-        ? `${API}/companies/${editingCompany.CompanyID}`
-        : `${API}/companies`;
+      const url = editingSupervisor
+        ? `${API}/supervisors/${editingSupervisor.SupervisorID}`
+        : `${API}/supervisors`;
 
-      const method = editingCompany ? "PUT" : "POST";
+      const method = editingSupervisor ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
@@ -109,53 +115,40 @@ function CompaniesPage() {
         return;
       }
 
-      setFormData({
-        CompanyName: "",
-        Email: "",
-        Address: "",
-        Phone: "",
-        Industry: "",
-      });
-
-      setEditingCompany(null);
+      resetForm();
       setShowForm(false);
-
-      loadCompanies();
+      loadSupervisors();
     } catch (error) {
-      console.error("Error saving company:", error);
+      console.error("Error saving supervisor:", error);
       alert("Could not connect to the server.");
     }
   };
 
   const cancelForm = () => {
+    resetForm();
     setShowForm(false);
-    setEditingCompany(null);
-
-    setFormData({
-      CompanyName: "",
-      Email: "",
-      Address: "",
-      Phone: "",
-      Industry: "",
-    });
   };
 
   return (
     <main className="main-content">
       <div className="page-header">
         <div>
-          <h1>Companies</h1>
-          <p>Manage companies offering internship opportunities.</p>
+          <h1>Supervisors</h1>
+          <p>Manage internship supervisors.</p>
         </div>
 
         <button
           className="primary-button"
           onClick={() => {
-            setEditingCompany(null);
-            setShowForm(!showForm);
+            if (showForm) {
+              cancelForm();
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
           }}
         >
-          {showForm ? "Cancel" : "+ Add Company"}
+          {showForm ? "Cancel" : "+ Add Supervisor"}
         </button>
       </div>
 
@@ -163,7 +156,9 @@ function CompaniesPage() {
         <section className="card form-card">
           <div className="card-header">
             <h2>
-              {editingCompany ? "Edit Company" : "Add Company"}
+              {editingSupervisor
+                ? "Edit Supervisor"
+                : "Add Supervisor"}
             </h2>
           </div>
 
@@ -171,11 +166,12 @@ function CompaniesPage() {
             <div className="form-grid">
 
               <div className="form-group">
-                <label>Company Name *</label>
+                <label>Name *</label>
+
                 <input
                   type="text"
-                  name="CompanyName"
-                  value={formData.CompanyName}
+                  name="Name"
+                  value={formData.Name}
                   onChange={handleChange}
                   required
                 />
@@ -183,6 +179,7 @@ function CompaniesPage() {
 
               <div className="form-group">
                 <label>Email *</label>
+
                 <input
                   type="email"
                   name="Email"
@@ -193,17 +190,8 @@ function CompaniesPage() {
               </div>
 
               <div className="form-group">
-                <label>Address</label>
-                <input
-                  type="text"
-                  name="Address"
-                  value={formData.Address}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
                 <label>Phone</label>
+
                 <input
                   type="text"
                   name="Phone"
@@ -212,23 +200,16 @@ function CompaniesPage() {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Industry</label>
-                <input
-                  type="text"
-                  name="Industry"
-                  value={formData.Industry}
-                  onChange={handleChange}
-                />
-              </div>
-
             </div>
 
             <div className="form-actions">
-              <button type="submit" className="primary-button">
-                {editingCompany
-                  ? "Update Company"
-                  : "Save Company"}
+              <button
+                type="submit"
+                className="primary-button"
+              >
+                {editingSupervisor
+                  ? "Update Supervisor"
+                  : "Save Supervisor"}
               </button>
 
               <button
@@ -245,16 +226,16 @@ function CompaniesPage() {
 
       <section className="card">
         <div className="card-header">
-          <h2>Company List</h2>
+          <h2>Supervisor List</h2>
 
           <span className="count">
-            {companies.length} Companies
+            {supervisors.length} Supervisors
           </span>
         </div>
 
         {loading ? (
           <div className="loading">
-            Loading companies...
+            Loading supervisors...
           </div>
         ) : (
           <div className="table-wrapper">
@@ -262,36 +243,32 @@ function CompaniesPage() {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Company Name</th>
+                  <th>Name</th>
                   <th>Email</th>
-                  <th>Address</th>
                   <th>Phone</th>
-                  <th>Industry</th>
                   <th>Actions</th>
                 </tr>
               </thead>
 
               <tbody>
-                {companies.map((company) => (
-                  <tr key={company.CompanyID}>
-                    <td>{company.CompanyID}</td>
+                {supervisors.map((supervisor) => (
+                  <tr key={supervisor.SupervisorID}>
+                    <td>{supervisor.SupervisorID}</td>
 
                     <td className="student-name">
-                      {company.CompanyName}
+                      {supervisor.Name}
                     </td>
 
-                    <td>{company.Email}</td>
+                    <td>{supervisor.Email}</td>
 
-                    <td>{company.Address}</td>
-
-                    <td>{company.Phone}</td>
-
-                    <td>{company.Industry}</td>
+                    <td>{supervisor.Phone}</td>
 
                     <td>
                       <button
                         className="edit-button"
-                        onClick={() => handleEdit(company)}
+                        onClick={() =>
+                          handleEdit(supervisor)
+                        }
                       >
                         Edit
                       </button>
@@ -299,7 +276,9 @@ function CompaniesPage() {
                       <button
                         className="delete-button"
                         onClick={() =>
-                          handleDelete(company.CompanyID)
+                          handleDelete(
+                            supervisor.SupervisorID
+                          )
                         }
                       >
                         Delete
@@ -316,4 +295,4 @@ function CompaniesPage() {
   );
 }
 
-export default CompaniesPage;
+export default SupervisorsPage;
