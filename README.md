@@ -1,156 +1,425 @@
-InterHub ¡ª Internship Management System
-Clean formatted reference for the project README. The actual GitHub README should remain Markdown text.
+# InterHub â€” Internship Management System
 
+A web-based internship management system for managing internship opportunities, students, companies, supervisors, and applications in one centralized platform.
 
-Project Overview 
-A web-based internship management system designed to help students, companies, and administrators manage internship opportunities and applications in one centralized platform. 
+InterHub is built with a **React frontend**, **Flask REST API**, and **SQLite database**, with authentication and role-based access control.
 
-InterHub provides role-based access, internship management, application tracking, application details, and audit logging through a React frontend and Flask backend. 
+---
 
-Key Features 
-Authentication & Authorization 
-6¦1 Secure login system 
-6¦1 Session-based authentication 
-6¦1 Role-based access control (RBAC) 
-6¦1 Separate permissions for Admin, Student, and Company users 
-6¦1 Protected API endpoints 
-Internship Management 
-6¦1 View available internships 
-6¦1 Create and manage internship opportunities 
-6¦1 Assign company supervisors 
-6¦1 Track title, duration, salary, location, company, and supervisor 
-Application Management 
-6¦1 Submit applications 
-6¦1 View application records 
-6¦1 Update application status 
-6¦1 Track application progress 
-6¦1 View detailed application information 
-Audit Log 
-Records application status changes, including application ID, previous status, new status, change date, and user. 
-Dashboard 
-Statistics overview, recent applications, quick actions, application management shortcuts, and role-aware information. 
+## Project Overview
 
-User Roles & Permissions 
-Feature Admin 
-Features	Admin	Student	Company
-Dashboard 	7½7	7½7	7½7
-View Students 	7½7	7½7	¡ª
-Manage Students 	7½7	¡ª	¡ª
-Manage Students 	7½7	¡ª	7½7
-View Companies 	7½7	¡ª	7½7
-Manage Companies 	7½7	7½7	7½7
-View Internships 	7½7	¡ª	7½7
-Manage Internships	7½7	7½7	7½7
-View Applications 	7½7	7½7	¡ª
-Create Applications 	7½7	¡ª	7½7
-Update Applications 	7½7	¡ª	¡ª
-Delete Applications	7½7	¡ª	7½7
-Audit Log 	7½7	¡ª	¡ª
+InterHub is a full-stack web application developed as a Computer Science university project.
 
-Permissions are enforced on the backend as well as reflected in the frontend interface. 
-Technology Stack 
-Frontend: React, JavaScript, CSS, React Router, Fetch API 
-Backend: Python, Flask, Flask-CORS, Python-dotenv, REST API 
-Database: SQLite 
-Tools: Visual Studio Code, Git, GitHub, npm 
+The system connects three main user roles:
 
-System Architecture 
-React Frontend
- ¡ö
-           ¡ö REST API
- ¨‹
-Flask Backend
-¡ö
-     ¡ö SQL
-¨‹
-SQLite Database
+- **Administrator** â€” manages students, companies, internships, supervisors, and applications.
+- **Student** â€” views internships and submits applications.
+- **Company** â€” manages company internships and updates application statuses.
 
-Project Structure 
-Internship-Management-System/ 
-¡ö¡ö¡ö backend/ 
-¡ö   ¡ö¡ö¡ö app.py 
-¡ö   ¡ö¡ö¡ö db.py 
-¡ö   ¡ö¡ö¡ö .env.example 
-¡ö   ¡ö¡ö¡ö .env 
-¡ö¡ö¡ö public/ 
-¡ö¡ö¡ö src/ 
-¡ö   ¡ö¡ö¡ö App.js 
-¡ö   ¡ö¡ö¡ö App.css 
-¡ö   ¡ö¡ö¡ö api.js 
-¡ö   ¡ö¡ö¡ö LoginPage.jsx 
-¡ö   ¡ö¡ö¡ö Dashboard.jsx 
-¡ö   ¡ö¡ö¡ö StudentsPage.jsx 
-¡ö   ¡ö¡ö¡ö CompaniesPage.jsx 
-¡ö   ¡ö¡ö¡ö InternshipsPage.jsx 
-¡ö   ¡ö¡ö¡ö ApplicationsPage.jsx 
-¡ö   ¡ö¡ö¡ö ApplicationDetailsPage.jsx 
-¡ö   ¡ö¡ö¡ö AuditLogPage.jsx 
-¡ö   ¡ö¡ö¡ö SupervisorsPage.jsx 
-¡ö¡ö¡ö .gitignore 
-¡ö¡ö¡ö package.json 
-¡ö¡ö¡ö package-lock.json 
-¡ö¡ö¡ö README.md 
+The application uses authentication and backend-enforced role-based authorization to control access to different features.
 
-Getting Started 
-Prerequisites: Node.js, npm, Python 3, and Git. 
-git clone https://github.com/sanaeAbourouh/Internship-Management-System.git 
-cd Internship-Management-System 
-npm install 
-Configure the backend: 
+---
+
+## Key Features
+
+### Authentication & Authorization
+
+- Session-based authentication
+- Role-based access control (RBAC)
+- Separate permissions for Admin, Student, and Company users
+- Protected API endpoints
+- Backend permission enforcement
+
+### Internship Management
+
+- View available internships
+- Create and manage internship opportunities
+- Assign company supervisors
+- Track internship title, duration, salary, location, company, and supervisor
+
+### Application Management
+
+- Submit internship applications
+- View application records
+- Update application status
+- Track application progress
+- View detailed application information
+
+### Application Status Tracking
+
+Applications can move through the following stages:
+
+`Applied` â†’ `Shortlisted` â†’ `Interviewed` â†’ `Offered` â†’ `Placed`
+
+Applications can also be marked as:
+
+`Rejected`
+
+### Application Details
+
+A dedicated application details page provides information such as:
+
+- Student information
+- Company information
+- Internship information
+- Supervisor information
+- Application date
+- Current application status
+
+### Audit Log
+
+The system records application status changes, including:
+
+- Application ID
+- Previous status
+- New status
+- Change date
+- User who made the change
+
+### Dashboard
+
+The dashboard provides:
+
+- Statistics overview
+- Recent applications
+- Quick actions
+- Application management shortcuts
+- Role-aware system information
+
+---
+
+## User Roles & Permissions
+
+| Feature | Admin | Student | Company |
+|---|:---:|:---:|:---:|
+| Dashboard | Yes | Yes | Yes |
+| View Students | Yes | Yes | No |
+| Manage Students | Yes | No | No |
+| View Companies | Yes | No | Yes |
+| Manage Companies | Yes | No | Yes |
+| View Internships | Yes | Yes | Yes |
+| Manage Internships | Yes | No | Yes |
+| View Applications | Yes | Yes | Yes |
+| Create Applications | Yes | Yes | No |
+| Update Applications | Yes | No | Yes |
+| Delete Applications | Yes | No | No |
+| View Supervisors | Yes | No | Yes |
+| Audit Log | Yes | No | No |
+
+> Permissions are enforced on the backend as well as reflected in the frontend interface.
+
+---
+
+## Technology Stack
+
+### Frontend
+
+- React
+- JavaScript
+- CSS
+- React Router
+- Fetch API
+
+### Backend
+
+- Python
+- Flask
+- Flask-CORS
+- Python-dotenv
+- REST API
+
+### Database
+
+- SQLite
+
+### Development Tools
+
+- Visual Studio Code
+- Git
+- GitHub
+- npm
+
+---
+
+## System Architecture
+
+```text
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚        React Frontend         â”‚
+â”‚                               â”‚
+â”‚  Login                        â”‚
+â”‚  Dashboard                    â”‚
+â”‚  Students                     â”‚
+â”‚  Companies                    â”‚
+â”‚  Internships                  â”‚
+â”‚  Applications                 â”‚
+â”‚  Application Details          â”‚
+â”‚  Audit Log                    â”‚
+â”‚  Supervisors                  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                â”‚
+                â”‚ REST API
+                â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚        Flask Backend          â”‚
+â”‚                               â”‚
+â”‚  Authentication               â”‚
+â”‚  Role-Based Authorization     â”‚
+â”‚  Application Logic            â”‚
+â”‚  API Endpoints                â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                â”‚
+                â”‚ SQL
+                â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚          SQLite               â”‚
+â”‚                               â”‚
+â”‚  Student                      â”‚
+â”‚  Company                      â”‚
+â”‚  Internship                   â”‚
+â”‚  Supervisor                   â”‚
+â”‚  Application                  â”‚
+â”‚  ApplicationAudit             â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+---
+
+## Project Structure
+
+```text
+Internship-Management-System/
+â”‚
+â”œâ”€â”€ backend/
+â”‚   â”œâ”€â”€ app.py
+â”‚   â”œâ”€â”€ db.py
+â”‚   â”œâ”€â”€ .env.example
+â”‚   â””â”€â”€ .env
+â”‚
+â”œâ”€â”€ public/
+â”‚
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ App.js
+â”‚   â”œâ”€â”€ App.css
+â”‚   â”œâ”€â”€ api.js
+â”‚   â”œâ”€â”€ LoginPage.jsx
+â”‚   â”œâ”€â”€ Dashboard.jsx
+â”‚   â”œâ”€â”€ StudentsPage.jsx
+â”‚   â”œâ”€â”€ CompaniesPage.jsx
+â”‚   â”œâ”€â”€ InternshipsPage.jsx
+â”‚   â”œâ”€â”€ ApplicationsPage.jsx
+â”‚   â”œâ”€â”€ ApplicationDetailsPage.jsx
+â”‚   â”œâ”€â”€ AuditLogPage.jsx
+â”‚   â””â”€â”€ SupervisorsPage.jsx
+â”‚
+â”œâ”€â”€ .gitignore
+â”œâ”€â”€ package.json
+â”œâ”€â”€ package-lock.json
+â””â”€â”€ README.md
+```
+
+---
+
+## Database
+
+The application uses **SQLite** as its database.
+
+Main entities include:
+
+- Student
+- Company
+- Internship
+- Supervisor
+- Application
+- ApplicationAudit
+
+The database location is configured through the `DATABASE_PATH` environment variable.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+- Node.js
+- npm
+- Python 3
+- Git
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/sanaeAbourouh/Internship-Management-System.git
+cd Internship-Management-System
+```
+
+### 2. Install Frontend Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Backend Environment
+
+Create the backend `.env` file from the example:
+
+```bash
 cd backend
-cp .env.example .env 
-Install backend dependencies: 
-pip install flask flask-cors python-dotenv 
-Start backend: 
-python backend/app.py 
-Start frontend in another terminal: 
-npm start 
+cp .env.example .env
+```
 
+Update the values in `.env` according to your local environment.
 
-Demo Accounts 
-R
-Role	Username	Password
-Administrator 	admin	admin123
-Student	student	student123
-Company	company	company123
-ol
-These credentials are intended for local demonstration purposes. 
+Example:
 
+```env
+DATABASE_PATH=/absolute/path/to/interhub.db
+SECRET_KEY=your-secret-key
 
-API Overview 
-/api/login 
-/api/logout 
-/api/students 
-/api/companies 
-/api/supervisors 
-/api/internships 
-/api/applications 
-/api/application-details 
-/api/audit-log 
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-admin-password
 
+STUDENT_USERNAME=student
+STUDENT_PASSWORD=your-student-password
 
-Security 
-The project uses environment variables for secrets, excludes .env from version control, uses session-based authentication, backend role-based authorization, protected API endpoints, local CORS configuration, and SQLite foreign-key enforcement. 
+COMPANY_USERNAME=company
+COMPANY_PASSWORD=your-company-password
+```
 
-This project is intended for educational and portfolio purposes and is not a production-ready authentication system. 
+> The `.env` file is intentionally excluded from Git.
 
+### 4. Install Backend Dependencies
 
-Future Improvements 
-6¦1 Password hashing and persistent user accounts 
-6¦1 Advanced authentication 
-6¦1 Email notifications 
-6¦1 Advanced search and filtering 
-6¦1 Application analytics 
-6¦1 Student and company profiles 
-6¦1 CV and file uploads 
-6¦1 Cloud deployment 
-6¦1 Automated testing 
-6¦1 Production database such as PostgreSQL 
+From the project root:
 
+```bash
+pip install flask flask-cors python-dotenv
+```
 
-Author 
-Sanae Abourouh 
-Computer Science Student 
+### 5. Start the Flask Backend
 
-License
+From the project root:
+
+```bash
+python backend/app.py
+```
+
+The backend runs on:
+
+```text
+http://127.0.0.1:5000
+```
+
+### 6. Start the React Frontend
+
+Open another terminal in the project root:
+
+```bash
+npm start
+```
+
+The frontend runs on:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## Demo Accounts
+
+The application includes three local demonstration roles:
+
+| Role | Username | Password |
+|---|---|---|
+| Administrator | `admin` | `admin123` |
+| Student | `student` | `student123` |
+| Company | `company` | `company123` |
+
+> These credentials are intended for local demonstration purposes only.
+
+---
+
+## API Overview
+
+The Flask backend provides REST API endpoints for:
+
+| Endpoint | Purpose |
+|---|---|
+| `/api/login` | User authentication |
+| `/api/logout` | User logout |
+| `/api/students` | Student management |
+| `/api/companies` | Company management |
+| `/api/supervisors` | Supervisor management |
+| `/api/internships` | Internship management |
+| `/api/applications` | Application management |
+| `/api/application-details` | Detailed application information |
+| `/api/audit-log` | Application status history |
+
+Authentication and authorization are applied to protected endpoints according to the user's role.
+
+---
+
+## Security
+
+The project includes several basic security practices:
+
+- Environment variables for configuration and secrets
+- `.env` excluded from version control
+- Session-based authentication
+- Backend role-based authorization
+- Protected API endpoints
+- CORS configuration for local development
+- SQLite foreign-key enforcement
+
+> This project is intended for educational and portfolio purposes and is not a production-ready authentication system.
+
+---
+
+## Screenshots
+
+The project interface includes:
+
+- Login page
+- Dashboard
+- Student management
+- Company management
+- Internship management
+- Application management
+- Application details
+- Audit log
+
+Screenshots can be added here to demonstrate the application's interface.
+
+---
+
+## Future Improvements
+
+Possible future improvements include:
+
+- Password hashing and persistent user accounts
+- More advanced authentication
+- Email notifications
+- Advanced internship search and filtering
+- Application analytics
+- Student and company profile pages
+- CV and file uploads
+- Cloud deployment
+- Automated testing
+- Production database such as PostgreSQL
+
+---
+
+## Author
+
+**Sanae Abourouh**
+
+Computer Science Student
+
+---
+
+## License
+
 This project was developed for educational and portfolio purposes.
