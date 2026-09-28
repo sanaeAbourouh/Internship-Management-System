@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-
-const API = "http://127.0.0.1:5000/api";
+import { useSearchParams } from "react-router-dom";
+import { apiFetch } from "./api";
 
 function CompaniesPage() {
   const [companies, setCompanies] = useState([]);
@@ -8,6 +8,8 @@ function CompaniesPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [formData, setFormData] = useState({
     CompanyName: "",
@@ -17,22 +19,43 @@ function CompaniesPage() {
     Industry: "",
   });
 
-  const loadCompanies = () => {
-    fetch(`${API}/companies`)
-      .then((response) => response.json())
-      .then((data) => {
-        setCompanies(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error loading companies:", error);
-        setLoading(false);
-      });
+  const resetForm = () => {
+    setFormData({
+      CompanyName: "",
+      Email: "",
+      Address: "",
+      Phone: "",
+      Industry: "",
+    });
+
+    setEditingCompany(null);
+  };
+
+  const loadCompanies = async () => {
+    try {
+      const data = await apiFetch("/companies");
+      setCompanies(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading companies:", error);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     loadCompanies();
   }, []);
+
+  // Open Add Company form when coming from Dashboard Quick Links
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      resetForm();
+      setShowForm(true);
+
+      // Remove ?action=add from the URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleChange = (event) => {
     setFormData({
@@ -63,24 +86,14 @@ function CompaniesPage() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(
-        `${API}/companies/${companyId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Failed to delete company.");
-        return;
-      }
+      await apiFetch(`/companies/${companyId}`, {
+        method: "DELETE",
+      });
 
       loadCompanies();
     } catch (error) {
       console.error("Error deleting company:", error);
-      alert("Could not connect to the server.");
+      alert(error.message || "Could not delete company.");
     }
   };
 
@@ -88,56 +101,30 @@ function CompaniesPage() {
     event.preventDefault();
 
     try {
-      const url = editingCompany
-        ? `${API}/companies/${editingCompany.CompanyID}`
-        : `${API}/companies`;
+      const endpoint = editingCompany
+        ? `/companies/${editingCompany.CompanyID}`
+        : "/companies";
 
       const method = editingCompany ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      await apiFetch(endpoint, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Operation failed.");
-        return;
-      }
-
-      setFormData({
-        CompanyName: "",
-        Email: "",
-        Address: "",
-        Phone: "",
-        Industry: "",
-      });
-
-      setEditingCompany(null);
+      resetForm();
       setShowForm(false);
 
       loadCompanies();
     } catch (error) {
       console.error("Error saving company:", error);
-      alert("Could not connect to the server.");
+      alert(error.message || "Operation failed.");
     }
   };
 
   const cancelForm = () => {
     setShowForm(false);
-    setEditingCompany(null);
-
-    setFormData({
-      CompanyName: "",
-      Email: "",
-      Address: "",
-      Phone: "",
-      Industry: "",
-    });
+    resetForm();
   };
 
   return (
@@ -151,8 +138,12 @@ function CompaniesPage() {
         <button
           className="primary-button"
           onClick={() => {
-            setEditingCompany(null);
-            setShowForm(!showForm);
+            if (showForm) {
+              cancelForm();
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
           }}
         >
           {showForm ? "Cancel" : "+ Add Company"}
@@ -169,7 +160,6 @@ function CompaniesPage() {
 
           <form onSubmit={handleSubmit} className="student-form">
             <div className="form-grid">
-
               <div className="form-group">
                 <label>Company Name *</label>
                 <input
@@ -221,7 +211,6 @@ function CompaniesPage() {
                   onChange={handleChange}
                 />
               </div>
-
             </div>
 
             <div className="form-actions">

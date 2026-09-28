@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-
-const API = "http://127.0.0.1:5000/api";
+import { useSearchParams } from "react-router-dom";
+import { apiFetch } from "./api";
 
 const STATUSES = [
   "Applied",
@@ -11,7 +11,21 @@ const STATUSES = [
   "Rejected",
 ];
 
+const getCurrentUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("interhub_user")) || null;
+  } catch {
+    return null;
+  }
+};
+
 function ApplicationsPage() {
+  const currentUser = getCurrentUser();
+
+  const isAdmin = currentUser?.role === "admin";
+  const isStudent = currentUser?.role === "student";
+  const isCompany = currentUser?.role === "company";
+
   const [applications, setApplications] = useState([]);
   const [students, setStudents] = useState([]);
   const [internships, setInternships] = useState([]);
@@ -20,48 +34,14 @@ function ApplicationsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingApplication, setEditingApplication] = useState(null);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [formData, setFormData] = useState({
     StudentID: "",
     InternshipID: "",
     Status: "Applied",
     Notes: "",
   });
-
-  const loadData = async () => {
-    try {
-      const [
-        applicationsResponse,
-        studentsResponse,
-        internshipsResponse,
-      ] = await Promise.all([
-        fetch(`${API}/applications`),
-        fetch(`${API}/students`),
-        fetch(`${API}/internships`),
-      ]);
-
-      const [
-        applicationsData,
-        studentsData,
-        internshipsData,
-      ] = await Promise.all([
-        applicationsResponse.json(),
-        studentsResponse.json(),
-        internshipsResponse.json(),
-      ]);
-
-      setApplications(applicationsData);
-      setStudents(studentsData);
-      setInternships(internshipsData);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error loading application data:", error);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const resetForm = () => {
     setFormData({
@@ -74,6 +54,50 @@ function ApplicationsPage() {
     setEditingApplication(null);
   };
 
+  const loadData = async () => {
+    try {
+      setLoading(true);
+
+      const applicationsData = await apiFetch("/applications");
+      const internshipsData = await apiFetch("/internships");
+
+      setApplications(applicationsData);
+      setInternships(internshipsData);
+
+      // Students are only needed when Admin or Student
+      // creates a new application.
+      if (isAdmin || isStudent) {
+        const studentsData = await apiFetch("/students");
+        setStudents(studentsData);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading application data:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Open New Application form from Dashboard Quick Links
+  useEffect(() => {
+    const action = searchParams.get("action");
+
+    if (action === "add" && (isAdmin || isStudent)) {
+      resetForm();
+      setShowForm(true);
+
+      // Remove ?action=add from URL
+      setSearchParams({}, { replace: true });
+    } else if (action === "add") {
+      // Company is not allowed to create applications.
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams, isAdmin, isStudent]);
+
   const handleChange = (event) => {
     setFormData({
       ...formData,
@@ -82,11 +106,19 @@ function ApplicationsPage() {
   };
 
   const handleNewApplication = () => {
+    if (!isAdmin && !isStudent) {
+      return;
+    }
+
     resetForm();
     setShowForm(true);
   };
 
   const handleEdit = (application) => {
+    if (!isAdmin && !isCompany) {
+      return;
+    }
+
     setEditingApplication(application);
 
     setFormData({
@@ -100,31 +132,27 @@ function ApplicationsPage() {
   };
 
   const handleDelete = async (applicationId) => {
+    if (!isAdmin) {
+      return;
+    }
+
     const confirmed = window.confirm(
       "Are you sure you want to delete this application?"
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
     try {
-      const response = await fetch(
-        `${API}/applications/${applicationId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Failed to delete application.");
-        return;
-      }
+      await apiFetch(`/applications/${applicationId}`, {
+        method: "DELETE",
+      });
 
       loadData();
     } catch (error) {
       console.error("Error deleting application:", error);
-      alert("Could not connect to the server.");
+      alert(error.message || "Could not delete application.");
     }
   };
 
@@ -132,12 +160,17 @@ function ApplicationsPage() {
     event.preventDefault();
 
     try {
-      let url;
+      let endpoint;
       let method;
       let payload;
 
       if (editingApplication) {
-        url = `${API}/applications/${editingApplication.ApplicationID}`;
+        // Only Admin and Company can edit.
+        if (!isAdmin && !isCompany) {
+          return;
+        }
+
+        endpoint = `/applications/${editingApplication.ApplicationID}`;
         method = "PUT";
 
         payload = {
@@ -145,7 +178,12 @@ function ApplicationsPage() {
           Notes: formData.Notes,
         };
       } else {
-        url = `${API}/applications`;
+        // Only Admin and Student can create.
+        if (!isAdmin && !isStudent) {
+          return;
+        }
+
+        endpoint = "/applications";
         method = "POST";
 
         payload = {
@@ -154,27 +192,18 @@ function ApplicationsPage() {
         };
       }
 
-      const response = await fetch(url, {
+      await apiFetch(endpoint, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Operation failed.");
-        return;
-      }
-
       resetForm();
       setShowForm(false);
+
       loadData();
     } catch (error) {
       console.error("Error saving application:", error);
-      alert("Could not connect to the server.");
+      alert(error.message || "Operation failed.");
     }
   };
 
@@ -185,6 +214,9 @@ function ApplicationsPage() {
 
   return (
     <main className="main-content">
+      {/* =========================
+          PAGE HEADER
+      ========================== */}
       <div className="page-header">
         <div>
           <h1>Applications</h1>
@@ -193,20 +225,25 @@ function ApplicationsPage() {
           </p>
         </div>
 
-        <button
-          className="primary-button"
-          onClick={() => {
-            if (showForm) {
-              cancelForm();
-            } else {
-              handleNewApplication();
-            }
-          }}
-        >
-          {showForm ? "Cancel" : "+ New Application"}
-        </button>
+        {(isAdmin || isStudent) && (
+          <button
+            className="primary-button"
+            onClick={() => {
+              if (showForm) {
+                cancelForm();
+              } else {
+                handleNewApplication();
+              }
+            }}
+          >
+            {showForm ? "Cancel" : "+ New Application"}
+          </button>
+        )}
       </div>
 
+      {/* =========================
+          ADD / EDIT FORM
+      ========================== */}
       {showForm && (
         <section className="card form-card">
           <div className="card-header">
@@ -273,18 +310,22 @@ function ApplicationsPage() {
               <div className="form-grid">
                 <div className="form-group">
                   <label>Student</label>
+
                   <input
                     type="text"
-                    value={editingApplication.StudentName}
+                    value={editingApplication.StudentName || ""}
                     disabled
                   />
                 </div>
 
                 <div className="form-group">
                   <label>Internship</label>
+
                   <input
                     type="text"
-                    value={editingApplication.InternshipTitle}
+                    value={
+                      editingApplication.InternshipTitle || ""
+                    }
                     disabled
                   />
                 </div>
@@ -342,6 +383,9 @@ function ApplicationsPage() {
         </section>
       )}
 
+      {/* =========================
+          APPLICATION TABLE
+      ========================== */}
       <section className="card">
         <div className="card-header">
           <h2>Application List</h2>
@@ -399,32 +443,40 @@ function ApplicationsPage() {
 
                     <td>
                       <span
-                        className={`status-badge status-${application.Status.toLowerCase()}`}
+                        className={`status-badge status-${String(
+                          application.Status || ""
+                        ).toLowerCase()}`}
                       >
                         {application.Status}
                       </span>
                     </td>
 
                     <td>
-                      <button
-                        className="edit-button"
-                        onClick={() =>
-                          handleEdit(application)
-                        }
-                      >
-                        Edit
-                      </button>
+                      {/* Admin + Company can edit */}
+                      {(isAdmin || isCompany) && (
+                        <button
+                          className="edit-button"
+                          onClick={() =>
+                            handleEdit(application)
+                          }
+                        >
+                          Edit
+                        </button>
+                      )}
 
-                      <button
-                        className="delete-button"
-                        onClick={() =>
-                          handleDelete(
-                            application.ApplicationID
-                          )
-                        }
-                      >
-                        Delete
-                      </button>
+                      {/* Only Admin can delete */}
+                      {isAdmin && (
+                        <button
+                          className="delete-button"
+                          onClick={() =>
+                            handleDelete(
+                              application.ApplicationID
+                            )
+                          }
+                        >
+                          Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

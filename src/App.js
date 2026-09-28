@@ -13,7 +13,8 @@ import InternshipsPage from "./InternshipsPage";
 import ApplicationsPage from "./ApplicationsPage";
 import SupervisorsPage from "./SupervisorsPage";
 import LoginPage from "./LoginPage";
-
+import ApplicationDetailsPage from "./ApplicationDetailsPage";
+import AuditLogPage from "./AuditLogPage";
 import "./App.css";
 
 
@@ -278,6 +279,22 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/application-details"
+  element={
+    <ProtectedRoute allowedRoles={["admin", "student", "company"]}>
+      <ApplicationDetailsPage />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/audit-log"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <AuditLogPage />
+    </ProtectedRoute>
+  }
+/>
 
 
         {/* SUPERVISORS — ADMIN ONLY */}

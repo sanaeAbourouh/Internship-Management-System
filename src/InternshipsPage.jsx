@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-
-const API = "http://127.0.0.1:5000/api";
+import { useSearchParams } from "react-router-dom";
+import { apiFetch } from "./api";
 
 function InternshipsPage() {
   const [internships, setInternships] = useState([]);
@@ -10,6 +10,8 @@ function InternshipsPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingInternship, setEditingInternship] = useState(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [formData, setFormData] = useState({
     Title: "",
@@ -21,20 +23,27 @@ function InternshipsPage() {
     SupervisorID: "",
   });
 
+  const resetForm = () => {
+    setFormData({
+      Title: "",
+      Description: "",
+      Duration: "",
+      Salary: "",
+      Location: "",
+      CompanyID: "",
+      SupervisorID: "",
+    });
+
+    setEditingInternship(null);
+  };
+
   const loadData = async () => {
     try {
-      const [internshipsResponse, companiesResponse, supervisorsResponse] =
-        await Promise.all([
-          fetch(`${API}/internships`),
-          fetch(`${API}/companies`),
-          fetch(`${API}/supervisors`),
-        ]);
-
       const [internshipsData, companiesData, supervisorsData] =
         await Promise.all([
-          internshipsResponse.json(),
-          companiesResponse.json(),
-          supervisorsResponse.json(),
+          apiFetch("/internships"),
+          apiFetch("/companies"),
+          apiFetch("/supervisors"),
         ]);
 
       setInternships(internshipsData);
@@ -51,25 +60,22 @@ function InternshipsPage() {
     loadData();
   }, []);
 
+  // Open Add Internship form from Dashboard Quick Links
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      resetForm();
+      setShowForm(true);
+
+      // Remove ?action=add from the URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const handleChange = (event) => {
     setFormData({
       ...formData,
       [event.target.name]: event.target.value,
     });
-  };
-
-  const resetForm = () => {
-    setFormData({
-      Title: "",
-      Description: "",
-      Duration: "",
-      Salary: "",
-      Location: "",
-      CompanyID: "",
-      SupervisorID: "",
-    });
-
-    setEditingInternship(null);
   };
 
   const handleEdit = (internship) => {
@@ -96,24 +102,14 @@ function InternshipsPage() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(
-        `${API}/internships/${internshipId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Failed to delete internship.");
-        return;
-      }
+      await apiFetch(`/internships/${internshipId}`, {
+        method: "DELETE",
+      });
 
       loadData();
     } catch (error) {
       console.error("Error deleting internship:", error);
-      alert("Could not connect to the server.");
+      alert(error.message || "Could not delete internship.");
     }
   };
 
@@ -121,9 +117,9 @@ function InternshipsPage() {
     event.preventDefault();
 
     try {
-      const url = editingInternship
-        ? `${API}/internships/${editingInternship.InternshipID}`
-        : `${API}/internships`;
+      const endpoint = editingInternship
+        ? `/internships/${editingInternship.InternshipID}`
+        : "/internships";
 
       const method = editingInternship ? "PUT" : "POST";
 
@@ -133,27 +129,18 @@ function InternshipsPage() {
         SupervisorID: Number(formData.SupervisorID),
       };
 
-      const response = await fetch(url, {
+      await apiFetch(endpoint, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Operation failed.");
-        return;
-      }
-
       resetForm();
       setShowForm(false);
+
       loadData();
     } catch (error) {
       console.error("Error saving internship:", error);
-      alert("Could not connect to the server.");
+      alert(error.message || "Operation failed.");
     }
   };
 
@@ -197,7 +184,6 @@ function InternshipsPage() {
 
           <form onSubmit={handleSubmit} className="student-form">
             <div className="form-grid">
-
               <div className="form-group">
                 <label>Title *</label>
                 <input
@@ -292,7 +278,6 @@ function InternshipsPage() {
                   rows="4"
                 />
               </div>
-
             </div>
 
             <div className="form-actions">
@@ -365,9 +350,7 @@ function InternshipsPage() {
                     <td>
                       <button
                         className="edit-button"
-                        onClick={() =>
-                          handleEdit(internship)
-                        }
+                        onClick={() => handleEdit(internship)}
                       >
                         Edit
                       </button>
@@ -375,9 +358,7 @@ function InternshipsPage() {
                       <button
                         className="delete-button"
                         onClick={() =>
-                          handleDelete(
-                            internship.InternshipID
-                          )
+                          handleDelete(internship.InternshipID)
                         }
                       >
                         Delete

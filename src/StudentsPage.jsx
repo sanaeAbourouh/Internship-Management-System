@@ -1,13 +1,24 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { apiFetch } from "./api";
 
-const API = "http://127.0.0.1:5000/api";
-
+const getCurrentUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("interhub_user")) || null;
+  } catch {
+    return null;
+  }
+};
 function StudentsPage() {
+  const currentUser = getCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [formData, setFormData] = useState({
     Name: "",
@@ -16,22 +27,43 @@ function StudentsPage() {
     Phone: "",
   });
 
-  const loadStudents = () => {
-    fetch(`${API}/students`)
-      .then((response) => response.json())
-      .then((data) => {
-        setStudents(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error loading students:", error);
-        setLoading(false);
-      });
+  const resetForm = () => {
+    setFormData({
+      Name: "",
+      Email: "",
+      Major: "",
+      Phone: "",
+    });
+
+    setEditingStudent(null);
+  };
+
+  const loadStudents = async () => {
+    try {
+      const data = await apiFetch("/students");
+
+      setStudents(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading students:", error);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     loadStudents();
   }, []);
+
+  // Open Add Student form from Dashboard Quick Links
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      resetForm();
+      setShowForm(true);
+
+      // Remove ?action=add from the URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleChange = (event) => {
     setFormData({
@@ -41,117 +73,107 @@ function StudentsPage() {
   };
 
   const handleEdit = (student) => {
-  setEditingStudent(student);
-
-  setFormData({
-    Name: student.Name,
-    Email: student.Email,
-    Major: student.Major || "",
-    Phone: student.Phone || "",
-  });
-
-  setShowForm(true);
-};
-
-const handleDelete = async (studentId) => {
-  const confirmed = window.confirm(
-    "Are you sure you want to delete this student?"
-  );
-
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      `${API}/students/${studentId}`,
-      {
-        method: "DELETE",
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.error || "Failed to delete student.");
-      return;
-    }
-
-    loadStudents();
-  } catch (error) {
-    console.error("Error deleting student:", error);
-    alert("Could not connect to the server.");
-  }
-};
-
-  const handleSubmit = async (event) => {
-  event.preventDefault();
-
-  try {
-    const url = editingStudent
-      ? `${API}/students/${editingStudent.StudentID}`
-      : `${API}/students`;
-
-    const method = editingStudent ? "PUT" : "POST";
-
-    const response = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.error || "Operation failed.");
-      return;
-    }
+    setEditingStudent(student);
 
     setFormData({
-      Name: "",
-      Email: "",
-      Major: "",
-      Phone: "",
+      Name: student.Name,
+      Email: student.Email,
+      Major: student.Major || "",
+      Phone: student.Phone || "",
     });
 
-    setEditingStudent(null);
-    setShowForm(false);
+    setShowForm(true);
+  };
 
-    loadStudents();
-  } catch (error) {
-    console.error("Error saving student:", error);
-    alert("Could not connect to the server.");
-  }
-};
+  const handleDelete = async (studentId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this student?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await apiFetch(`/students/${studentId}`, {
+        method: "DELETE",
+      });
+
+      loadStudents();
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      alert(error.message || "Could not delete student.");
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      const endpoint = editingStudent
+        ? `/students/${editingStudent.StudentID}`
+        : "/students";
+
+      const method = editingStudent ? "PUT" : "POST";
+
+      await apiFetch(endpoint, {
+        method,
+        body: JSON.stringify(formData),
+      });
+
+      resetForm();
+      setShowForm(false);
+
+      loadStudents();
+    } catch (error) {
+      console.error("Error saving student:", error);
+      alert(error.message || "Operation failed.");
+    }
+  };
+
+  const cancelForm = () => {
+    resetForm();
+    setShowForm(false);
+  };
 
   return (
     <main className="main-content">
       <div className="page-header">
-        <div>
-          <h1>Students</h1>
-          <p>Manage students registered in the internship system.</p>
-        </div>
+  <div>
+    <h1>Students</h1>
+    <p>Manage students registered in the internship system.</p>
+  </div>
 
-        <button
-          className="primary-button"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Cancel" : "+ Add Student"}
-        </button>
-      </div>
+  {isAdmin && (
+    <button
+      className="primary-button"
+      onClick={() => {
+        if (showForm) {
+          cancelForm();
+        } else {
+          resetForm();
+          setShowForm(true);
+        }
+      }}
+    >
+      {showForm ? "Cancel" : "+ Add Student"}
+    </button>
+  )}
+</div>
 
       {showForm && (
         <section className="card form-card">
           <div className="card-header">
-            <h2>{editingStudent ? "Edit Student" : "Add Student"}</h2>
+            <h2>
+              {editingStudent ? "Edit Student" : "Add Student"}
+            </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="student-form">
             <div className="form-grid">
               <div className="form-group">
                 <label>Name *</label>
+
                 <input
                   type="text"
                   name="Name"
@@ -163,6 +185,7 @@ const handleDelete = async (studentId) => {
 
               <div className="form-group">
                 <label>Email *</label>
+
                 <input
                   type="email"
                   name="Email"
@@ -174,6 +197,7 @@ const handleDelete = async (studentId) => {
 
               <div className="form-group">
                 <label>Major</label>
+
                 <input
                   type="text"
                   name="Major"
@@ -184,6 +208,7 @@ const handleDelete = async (studentId) => {
 
               <div className="form-group">
                 <label>Phone</label>
+
                 <input
                   type="text"
                   name="Phone"
@@ -194,14 +219,19 @@ const handleDelete = async (studentId) => {
             </div>
 
             <div className="form-actions">
-              <button type="submit" className="primary-button">
-                {editingStudent ? "Update Student" : "Save Student"}
+              <button
+                type="submit"
+                className="primary-button"
+              >
+                {editingStudent
+                  ? "Update Student"
+                  : "Save Student"}
               </button>
 
               <button
                 type="button"
                 className="cancel-button"
-                onClick={() => setShowForm(false)}
+                onClick={cancelForm}
               >
                 Cancel
               </button>
@@ -220,7 +250,9 @@ const handleDelete = async (studentId) => {
         </div>
 
         {loading ? (
-          <div className="loading">Loading students...</div>
+          <div className="loading">
+            Loading students...
+          </div>
         ) : (
           <div className="table-wrapper">
             <table>
@@ -251,20 +283,26 @@ const handleDelete = async (studentId) => {
                     <td>{student.Phone}</td>
 
                     <td>
-                      <button
-  className="edit-button"
-  onClick={() => handleEdit(student)}
->
-  Edit
-</button>
+  {isAdmin && (
+    <>
+      <button
+        className="edit-button"
+        onClick={() => handleEdit(student)}
+      >
+        Edit
+      </button>
 
-                      <button
-  className="delete-button"
-  onClick={() => handleDelete(student.StudentID)}
->
-  Delete
-</button>
-                    </td>
+      <button
+        className="delete-button"
+        onClick={() =>
+          handleDelete(student.StudentID)
+        }
+      >
+        Delete
+      </button>
+    </>
+  )}
+</td>
                   </tr>
                 ))}
               </tbody>

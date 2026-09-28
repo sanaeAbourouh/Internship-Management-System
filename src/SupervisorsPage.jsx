@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API = "http://127.0.0.1:5000/api";
+import { apiFetch } from "./api";
 
 function SupervisorsPage() {
   const [supervisors, setSupervisors] = useState([]);
@@ -15,17 +14,16 @@ function SupervisorsPage() {
     Phone: "",
   });
 
-  const loadSupervisors = () => {
-    fetch(`${API}/supervisors`)
-      .then((response) => response.json())
-      .then((data) => {
-        setSupervisors(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error loading supervisors:", error);
-        setLoading(false);
-      });
+  const loadSupervisors = async () => {
+    try {
+      const data = await apiFetch("/supervisors");
+
+      setSupervisors(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading supervisors:", error);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -69,24 +67,14 @@ function SupervisorsPage() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(
-        `${API}/supervisors/${supervisorId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Failed to delete supervisor.");
-        return;
-      }
+      await apiFetch(`/supervisors/${supervisorId}`, {
+        method: "DELETE",
+      });
 
       loadSupervisors();
     } catch (error) {
       console.error("Error deleting supervisor:", error);
-      alert("Could not connect to the server.");
+      alert(error.message || "Could not delete supervisor.");
     }
   };
 
@@ -94,33 +82,24 @@ function SupervisorsPage() {
     event.preventDefault();
 
     try {
-      const url = editingSupervisor
-        ? `${API}/supervisors/${editingSupervisor.SupervisorID}`
-        : `${API}/supervisors`;
+      const endpoint = editingSupervisor
+        ? `/supervisors/${editingSupervisor.SupervisorID}`
+        : "/supervisors";
 
       const method = editingSupervisor ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      await apiFetch(endpoint, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Operation failed.");
-        return;
-      }
-
       resetForm();
       setShowForm(false);
+
       loadSupervisors();
     } catch (error) {
       console.error("Error saving supervisor:", error);
-      alert("Could not connect to the server.");
+      alert(error.message || "Operation failed.");
     }
   };
 
@@ -164,7 +143,6 @@ function SupervisorsPage() {
 
           <form onSubmit={handleSubmit} className="student-form">
             <div className="form-grid">
-
               <div className="form-group">
                 <label>Name *</label>
 
@@ -199,7 +177,6 @@ function SupervisorsPage() {
                   onChange={handleChange}
                 />
               </div>
-
             </div>
 
             <div className="form-actions">
