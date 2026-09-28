@@ -1,70 +1,156 @@
-# Getting Started with Create React App
+InterHub — Internship Management System
+Clean formatted reference for the project README. The actual GitHub README should remain Markdown text.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+Project Overview 
+A web-based internship management system designed to help students, companies, and administrators manage internship opportunities and applications in one centralized platform. 
 
-In the project directory, you can run:
+InterHub provides role-based access, internship management, application tracking, application details, and audit logging through a React frontend and Flask backend. 
 
-### `npm start`
+Key Features 
+Authentication & Authorization 
+• Secure login system 
+• Session-based authentication 
+• Role-based access control (RBAC) 
+• Separate permissions for Admin, Student, and Company users 
+• Protected API endpoints 
+Internship Management 
+• View available internships 
+• Create and manage internship opportunities 
+• Assign company supervisors 
+• Track title, duration, salary, location, company, and supervisor 
+Application Management 
+• Submit applications 
+• View application records 
+• Update application status 
+• Track application progress 
+• View detailed application information 
+Audit Log 
+Records application status changes, including application ID, previous status, new status, change date, and user. 
+Dashboard 
+Statistics overview, recent applications, quick actions, application management shortcuts, and role-aware information. 
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+User Roles & Permissions 
+Feature Admin 
+Features	Admin	Student	Company
+Dashboard 	✓	✓	✓
+View Students 	✓	✓	—
+Manage Students 	✓	—	—
+Manage Students 	✓	—	✓
+View Companies 	✓	—	✓
+Manage Companies 	✓	✓	✓
+View Internships 	✓	—	✓
+Manage Internships	✓	✓	✓
+View Applications 	✓	✓	—
+Create Applications 	✓	—	✓
+Update Applications 	✓	—	—
+Delete Applications	✓	—	✓
+Audit Log 	✓	—	—
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Permissions are enforced on the backend as well as reflected in the frontend interface. 
+Technology Stack 
+Frontend: React, JavaScript, CSS, React Router, Fetch API 
+Backend: Python, Flask, Flask-CORS, Python-dotenv, REST API 
+Database: SQLite 
+Tools: Visual Studio Code, Git, GitHub, npm 
 
-### `npm test`
+System Architecture 
+React Frontend
+ ■
+           ■ REST API
+ ▼
+Flask Backend
+■
+     ■ SQL
+▼
+SQLite Database
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Project Structure 
+Internship-Management-System/ 
+■■■ backend/ 
+■   ■■■ app.py 
+■   ■■■ db.py 
+■   ■■■ .env.example 
+■   ■■■ .env 
+■■■ public/ 
+■■■ src/ 
+■   ■■■ App.js 
+■   ■■■ App.css 
+■   ■■■ api.js 
+■   ■■■ LoginPage.jsx 
+■   ■■■ Dashboard.jsx 
+■   ■■■ StudentsPage.jsx 
+■   ■■■ CompaniesPage.jsx 
+■   ■■■ InternshipsPage.jsx 
+■   ■■■ ApplicationsPage.jsx 
+■   ■■■ ApplicationDetailsPage.jsx 
+■   ■■■ AuditLogPage.jsx 
+■   ■■■ SupervisorsPage.jsx 
+■■■ .gitignore 
+■■■ package.json 
+■■■ package-lock.json 
+■■■ README.md 
 
-### `npm run build`
+Getting Started 
+Prerequisites: Node.js, npm, Python 3, and Git. 
+git clone https://github.com/sanaeAbourouh/Internship-Management-System.git 
+cd Internship-Management-System 
+npm install 
+Configure the backend: 
+cd backend
+cp .env.example .env 
+Install backend dependencies: 
+pip install flask flask-cors python-dotenv 
+Start backend: 
+python backend/app.py 
+Start frontend in another terminal: 
+npm start 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Demo Accounts 
+R
+Role	Username	Password
+Administrator 	admin	admin123
+Student	student	student123
+Company	company	company123
+ol
+These credentials are intended for local demonstration purposes. 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+API Overview 
+/api/login 
+/api/logout 
+/api/students 
+/api/companies 
+/api/supervisors 
+/api/internships 
+/api/applications 
+/api/application-details 
+/api/audit-log 
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Security 
+The project uses environment variables for secrets, excludes .env from version control, uses session-based authentication, backend role-based authorization, protected API endpoints, local CORS configuration, and SQLite foreign-key enforcement. 
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+This project is intended for educational and portfolio purposes and is not a production-ready authentication system. 
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+Future Improvements 
+• Password hashing and persistent user accounts 
+• Advanced authentication 
+• Email notifications 
+• Advanced search and filtering 
+• Application analytics 
+• Student and company profiles 
+• CV and file uploads 
+• Cloud deployment 
+• Automated testing 
+• Production database such as PostgreSQL 
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Author 
+Sanae Abourouh 
+Computer Science Student 
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+License
+This project was developed for educational and portfolio purposes.
