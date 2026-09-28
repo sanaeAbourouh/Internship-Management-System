@@ -19,7 +19,23 @@ The system connects three main user roles:
 The application uses authentication and backend-enforced role-based authorization to control access to different features.
 
 ---
+## Screenshots
 
+### Dashboard
+
+![InterHub Dashboard](screenshots/dashboard.png)
+
+### Internship Management
+
+![Internship Management](screenshots/internship.png)
+
+### Application Management
+
+![Application Management](screenshots/applications.png)
+
+### Audit Log
+
+![Audit Log](screenshots/audit-log.png)
 ## Key Features
 
 ### Authentication & Authorization
